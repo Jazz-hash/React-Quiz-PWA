@@ -7,6 +7,7 @@ import {
   Type,
 } from "./API";
 import { GlobalStyle, Wrapper } from "./App.styles";
+import { sendPushNotification } from "./PushNotifications";
 
 const App = () => {
   const [numberOfQuestions, setNumberOfQuestions] = useState<number>(10);
@@ -29,6 +30,9 @@ const App = () => {
       const fetchedCategories = await fetchQuizCategories();
       setCategories(fetchedCategories);
     };
+    setTimeout(() => {
+      sendPushNotification("Welcome User !!");
+    }, 2000);
     fetchCategories();
   }, []);
 
@@ -87,6 +91,12 @@ const App = () => {
       <GlobalStyle />
       <Wrapper>
         <h1>REACT QUIZ</h1>
+        {!navigator.onLine && (
+          <h4>
+            You are offline so currently you can only attempt quiz with " 10 "
+            questions and with category " all ".
+          </h4>
+        )}
         {gameOver && endGame ? (
           <>
             <form>
@@ -99,34 +109,38 @@ const App = () => {
                   required
                 />
               </div>
-              <div className="form-group">
-                <label>Number of questions:</label>
-                <input
-                  type="number"
-                  onChange={(e) =>
-                    setNumberOfQuestions(parseInt(e.target.value))
-                  }
-                  min="1"
-                  value={numberOfQuestions}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Select Category:</label>
-                <select
-                  value={category}
-                  onChange={(e) => {
-                    setCategory(parseInt(e.target.value));
-                  }}
-                >
-                  <option value={0}>Any type</option>
-                  {categories.map((category: Categories) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {navigator.onLine && (
+                <>
+                  <div className="form-group">
+                    <label>Number of questions:</label>
+                    <input
+                      type="number"
+                      onChange={(e) =>
+                        setNumberOfQuestions(parseInt(e.target.value))
+                      }
+                      min="1"
+                      value={numberOfQuestions}
+                      required
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Select Category:</label>
+                    <select
+                      value={category}
+                      onChange={(e) => {
+                        setCategory(parseInt(e.target.value));
+                      }}
+                    >
+                      <option value={0}>Any type</option>
+                      {categories.map((category: Categories) => (
+                        <option key={category.id} value={category.id}>
+                          {category.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
               <div className="form-group">
                 <label>Select Difficulty:</label>
                 <select
@@ -152,7 +166,6 @@ const App = () => {
                   <option value={Type.MULTIPLE}>Multiple Choice</option>
                 </select>
               </div>
-
               <div className="form-group">
                 <button className="start" onClick={startQuiz}>
                   Start

@@ -17,21 +17,33 @@ export enum Encoding {
 }
 
 const shuffleArray = (array: any[]) => {
-    return [...array].sort(() => Math.random() - 0.5);
-  };
-  
+  return [...array].sort(() => Math.random() - 0.5);
+};
+
+async function fetchQuizQuestionsOffline(url: string) {
+  const offlineQuizStorage = await caches.open("Offline-Quiz");
+  const findReponseForQuiz = await offlineQuizStorage.match(url);
+
+  if (!findReponseForQuiz || !findReponseForQuiz.status) {
+    return false;
+  }
+
+  return await findReponseForQuiz.json();
+}
 
 export const fetchQuizQuestions = async (
   amount: number,
   difficulty: string,
   type: string,
-  category: number,
+  category: number
 ) => {
   let URL = `https://opentdb.com/api.php?amount=${amount}&difficulty=${difficulty}&type=${type}`;
   if (category !== 0) {
-    URL += `&category=${category}`
+    URL += `&category=${category}`;
   }
-  const data = await (await fetch(URL)).json();
+  const data = await await fetch(URL)
+    .then((data) => data.json())
+    .catch(() => fetchQuizQuestionsOffline(URL));
   return data.results.map((question: Question) => ({
     ...question,
     answers: shuffleArray([
